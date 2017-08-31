@@ -245,7 +245,7 @@ class App extends React.Component {
         return (
             <div className="container">
                 <div className="row">
-                    <h1 className="col-xs-12 text-center">~~台彩對獎~~</h1>
+                    <h1 className="col-xs-12 text-center">台彩對獎</h1>
                 </div>
 
                 <ul className="nav nav-tabs">
