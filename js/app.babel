@@ -1,0 +1,287 @@
+class App extends React.Component {
+
+    constructor(props)
+    {
+        super(props)
+        this.state = {
+            powerfulAward  : [],    /* 威力彩開獎號碼 */
+            powerfulLottos : [[]],  /* 威力彩彩券號碼 */
+            powerfulRs     : false, /* 威力彩對獎結果 */
+            tab            : false  /* 切換選單狀態 */
+        }
+    }
+
+
+    isset(args)
+    {
+        return (typeof args != 'undefined' && args !== false && args !== 0 && args !== NaN && args !== '') ? true : false;
+    }
+
+
+    isArray(args)
+    {
+        return (this.isset(args) && Array.isArray(args)) ? true : false
+    }
+
+
+    isObject(args)
+    {
+        return (this.isset(args) && typeof(args) == 'object' && !Array.isArray(args)) ? true : false
+    }
+
+
+    ajax(method,url,data,thenCallback,errCallback)
+    {
+        if(!this.isset(url)){
+            alert('Ajax response no send path');
+            return;
+        }
+
+        axios({
+            method: (this.isset(method)) ? method : 'post',
+            url: url,
+            data: data
+        }).then((response) => {
+            var data = response.data;
+
+            switch(true){
+                case (this.isset(data)):
+                    if(typeof(thenCallback) == 'function') thenCallback(data);
+                break;
+                default:
+                    alert('伺服器端無資料回應！ Server no response！');
+                    if(typeof(errCallback) == 'function') errCallback();
+                break;
+            }            
+        }).catch((err) => {
+            if(typeof(errCallback) != 'function'){
+                log(err);
+            }else{
+                if(typeof(errCallback) == 'function') errCallback(err);
+            }
+        });
+    }
+
+
+    /**
+    * 威力彩開獎號碼輸入
+    */
+    powerfulAwardSet(e,parent)
+    {
+        var powerfulAward = parent.state.powerfulAward
+        var enterCode     = e.target.value
+        var index         = e.target.dataset.index
+
+        powerfulAward[index] = (parent.isset(enterCode) && enterCode >= 1 && enterCode <= 38) ? enterCode : false;
+
+        parent.setState({powerfulAward:powerfulAward})
+    }
+
+
+    /**
+    * 威力彩欄位
+    */
+    powerfulField(index,value,event,style,placeholder,pindex)
+    {
+        return (
+            <div className="col-xs-4 col-md-3 col-lg-2" style={{marginBottom:'1em'}}>
+                <input
+                    type        = "number"
+                    className   = "form-control col-xs-1"
+                    min         = "1"
+                    max         = "38"
+                    data-pindex = {pindex}
+                    data-index  = {index}
+                    value       = {value}
+                    onChange    = {(e) => event(e,this)}
+                    style       = {style}
+                    placeholder = {placeholder}
+                />
+            </div>
+        )
+    }
+
+
+    /**
+    * 威力彩開獎號碼輸入欄位
+    */
+    powerfulAward()
+    {
+        var powerfulAward = this.state.powerfulAward
+        var newAward      = [];
+
+        for(var i=0;i<=6;i++){
+            var awardCode = (this.isset(powerfulAward[i])) ? powerfulAward[i] : false
+            var placeholder = (i == 6) ? '特別號' : ''
+            var style       = {
+                borderColor : (i == 6) ? '#E72D2E' : '#057948',
+                color       : (i == 6) ? '#E72D2E' : '#057948',
+            }
+
+            var awardField = this.powerfulField(i,awardCode,this.powerfulAwardSet,style,placeholder)
+
+            newAward.push(awardField)
+        }
+
+        return newAward
+    }
+
+
+    /**
+    * 威力彩彩券號碼輸入
+    */
+    powerfulLottosSet(e,parent)
+    {
+        var powerfulLottos = parent.state.powerfulLottos
+        var enterCode     = e.target.value
+        var index         = e.target.dataset.index
+        var pindex        = e.target.dataset.pindex
+
+        powerfulLottos[pindex][index] = (parent.isset(enterCode) && enterCode >= 1 && enterCode <= 38) ? enterCode : false;
+
+        parent.setState({powerfulLottos:powerfulLottos})
+    }
+
+
+    /**
+    * 威力彩增加彩券輸入欄位
+    */
+    powerfulLottosAdd()
+    {
+        var powerfulLottos = this.state.powerfulLottos
+
+        powerfulLottos.push([])
+
+        this.setState({powerfulLottos:powerfulLottos})
+    }
+
+
+    /**
+    * 威力彩彩券號碼輸入欄位
+    */
+    powerfulLottos()
+    {
+        var powerfulLottos = this.state.powerfulLottos
+
+        return powerfulLottos.map((lottos,index) => {
+            var lottosField = [];
+
+            for(var i=0;i<=6;i++){
+                var code = (this.isset(lottos[i])) ? lottos[i] : false
+                var placeholder = (i == 6) ? '特別號' : ''
+                var style       = {
+                    borderColor : (i == 6) ? '#E72D2E' : '#057948',
+                    color       : (i == 6) ? '#E72D2E' : '#057948',
+                }
+
+                var field = this.powerfulField(i,code,this.powerfulLottosSet,style,placeholder,index)
+
+                lottosField.push(field)
+            }
+
+            return (
+                <div className="row">
+                    <h3 className="col-xs-12">{`輸入獎券號碼：第 ${index + 1} 組`}</h3>
+                    {lottosField}
+                </div>
+            )
+        })
+    }
+
+
+    /**
+    * 威力彩對獎結果顯示
+    */
+    powerfulRsShow(rs)
+    {
+        var powerfulRs = this.state.powerfulRs
+
+        if(this.isArray(powerfulRs)){
+            var rsLine = powerfulRs.map((rs,index) => {
+                return <h4 style={{margin:'15px 0'}}>{rs}</h4>
+            })
+
+            return (
+                <div className="col-xs-12" style={{marginTop:20}}>
+                    {rsLine}
+                </div>
+            )
+        }
+    }
+
+
+    /**
+    * 威力彩對獎
+    */
+    powerfulActive()
+    {
+        var powerfulAward  = this.state.powerfulAward
+        var powerfulLottos = this.state.powerfulLottos
+        var sendData       = {award:powerfulAward,lottos:powerfulLottos}
+
+        this.ajax('POST','/module/powerful_lotto.php',sendData,(data) => {
+            if(this.isset(data)) this.setState({powerfulRs:data})
+        },(Err) => {
+            alert(Err)
+        })
+    }
+
+
+    /**
+    * 顯示欄位切換
+    */
+    switchTab(tabName)
+    {
+        var tab = this.state.tab
+
+        if(tabName != tab) this.setState({tab:tabName})
+    }
+
+
+    render()
+    {
+        var tab = this.state.tab
+
+        return (
+            <div className="container">
+                <div className="row">
+                    <h1 className="col-xs-12 text-center">~~台彩對獎~~</h1>
+                </div>
+
+                <ul className="nav nav-tabs">
+                    <li role="presentation" className={ (!this.isset(tab) || tab == 'powerful') ? 'active' : '' }>
+                        <a onClick={(e) => this.switchTab('powerful')} style={{cursor: 'pointer'}}>威力彩</a>
+                    </li>
+                    <li role="presentation" className={ (tab == 'big') ? 'active' : '' }>
+                        <a onClick={(e) => this.switchTab('big')} style={{cursor: 'pointer'}}>大樂透</a>
+                    </li>
+                </ul>
+
+                <div className="row" style={{ display: (!this.isset(tab) || tab == 'powerful') ? 'block' : 'none' }}>
+                    <h2 className="col-xs-12">威力彩</h2>
+                    <div className="col-xs-12">
+                        <div className="row">
+                            <h3 className="col-xs-12">輸入開獎號碼</h3>
+                            {this.powerfulAward()}
+                        </div>
+                        <hr />
+                        {this.powerfulLottos()}
+                        <hr />
+                        <div className="row" style={{marginTop:15}}>
+                            <div className="col-xs-12">
+                                <button type="button" className="btn btn-info" onClick={() => this.powerfulLottosAdd()}>增加彩券號碼</button>
+                                <button type="button" className="btn btn-success" style={{marginLeft:15}} onClick={() => this.powerfulActive()}>開始對獎</button>
+                            </div>
+                        </div>
+                    </div>
+                    {this.powerfulRsShow()}
+                </div>
+
+                <div className="row" style={{ display: (tab == 'big') ? 'block' : 'none' }}>
+                    <h2 className="col-xs-12">大樂透</h2>
+                    <p className="col-xs-12 alert alert-warning">還沒好 q_q 目前只有威力彩....</p>
+                </div>
+            </div>
+        )
+    }
+}

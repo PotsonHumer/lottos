@@ -2,15 +2,17 @@
 
     # 威力彩對獎程式
 
+    $_POST = json_decode(file_get_contents('php://input'), true);
+
     # 輸入彩券號碼陣列;可多組，第二區號碼寫最後一項
-    $lottos = [
-        [],
-    ];
+    $lottos =  $_POST['lottos'];
     
     # 開獎號碼
+    $secAward = array_pop($_POST['award']);
+
     $section = [
-        [], # 第一區; 綠
-        0   # 第二區; 紅
+        $_POST['award'],
+        $secAward
     ];
 
     # 開始對獎    
@@ -29,10 +31,11 @@
 
         if(isset($gotCode)){
             sort($gotCode);
-            echo '第'.($lottoIndex + 1).'組對中號數：'.implode(',',$gotCode). '； '.$gotSec.'中特別號'."\n";
+            $rs[] = '第'.($lottoIndex + 1).'組對中號數：'.implode(',',$gotCode). '； '.$gotSec.'中特別號';
         }else{
-            echo '第'.($lottoIndex + 1).'組完全沒中!'."\n";
+            $rs[] = '第'.($lottoIndex + 1).'組完全沒中!';
         }
     }
 
+    echo json_encode($rs);
 ?>
