@@ -11,7 +11,16 @@
         <link rel="stylesheet" href="/css/style.css">
     </head>
     <body>
-        <div id="root"></div>
+        <div id="root">
+            <div class="container">
+                <div className="row">
+                    <h1 class="col-xs-12 text-center">台彩對獎</h1>
+                    <div class="col-xs-12 text-center" style="margin: 1em 0;">
+                        <i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <hr />
 
